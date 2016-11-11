@@ -31,6 +31,17 @@ class InviteController < ApplicationController
     email = params[:email]
     first_name = params[:first_name]
     last_name = params[:last_name]
+    app_id = params[:app_id]
+    login
+    app = Spaceship::Application.find(app_id)
+    app_id = app.apple_id
+
+    platform = params[:platform]
+
+    if platform == "Android"
+      redirect_to("https://play.google.com/apps/testing/#{app_id}")
+      return
+    end
 
     if ENV["RESTRICTED_DOMAIN"]
       domains = ENV["RESTRICTED_DOMAIN"].split(",")
@@ -72,7 +83,7 @@ class InviteController < ApplicationController
     begin
       login
 
-      tester = Spaceship::Tunes::Tester::External.find_by_app(apple_id, email)
+      tester = Spaceship::Tunes::Tester::External.find_by_app(app_id, email)
 
       logger.info "Found tester #{tester}"
 
@@ -88,11 +99,11 @@ class InviteController < ApplicationController
 
         logger.info "Successfully created tester #{tester.email}"
 
-        if apple_id.length > 0
-          logger.info "Addding tester to application"
-          tester.add_to_app!(apple_id)
-          logger.info "Done"
-        end
+        #if apple_id.length > 0
+        logger.info "Adding tester to application ID #{app_id}"
+        tester.add_to_app!(app_id)
+        logger.info "Done"
+        #end
 
         if testing_is_live?
           @message = t(:message_success_live)
@@ -153,7 +164,7 @@ class InviteController < ApplicationController
       Rails.cache.fetch('appMetadata', expires_in: 10.minutes) do
         {
           icon_url: app.app_icon_preview_url,
-          title: app.name
+          title: "Acid Remap iOS Beta Signup" #app.name
         }
       end
     end
