@@ -12,9 +12,8 @@
   <!-- End Google Analytics -->
 <% end %>
 
-<div class="container-fluid">
-	<div class="row">
-	<div class="col-md-4 col-md-offset-4">
+
+<div class="col-md-4 col-md-offset-4">
   <% if @metadata[:icon_url] %>
     <%= image_tag @metadata[:icon_url], class: "appIcon", style: "margin-bottom: 30px;" %>
   <% else %>
@@ -62,8 +61,6 @@
       <%= @message %>
     </p>
   <% end %>
-  </div>
-  </div>
 </div>
 
 <style type="text/css">
