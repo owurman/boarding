@@ -20,6 +20,9 @@
 # available at http://guides.rubyonrails.org/i18n.html.
 
 en:
+  app_name_label: "App Name:"
+  platform_label: "Platform:"
+  first_name_label: "First Name:"
   first_name_label: "First Name:"
   first_name_placeholder: "First Name"
   last_name_label: "Last Name:"
