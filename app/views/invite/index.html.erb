@@ -13,6 +13,7 @@
 <% end %>
 
 <div class="container" style="text-align: center; max-width: 350px; padding-top: 20px;">
+	<div class="col-md-4 col-md-offset-4">
   <% if @metadata[:icon_url] %>
     <%= image_tag @metadata[:icon_url], class: "appIcon", style: "margin-bottom: 30px;" %>
   <% else %>
@@ -60,6 +61,7 @@
       <%= @message %>
     </p>
   <% end %>
+  </div>
 </div>
 
 <style type="text/css">
