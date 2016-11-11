@@ -27,35 +27,36 @@
 				<h4><%= @metadata[:title] %></h4>
 
 				<%= form_tag("/beta/ios/submit", method: "post") do %>
-
-					<%= label_tag(:app_name, t(:app_name_label)) %>
-					<%= select_tag(:app_id, options_for_select([
-						['Paramedic Protocol Provider', 'com.acidremap.ParamedicProtocolProvider'],
-						['PPP Agency', 'com.acidremap.ParamedicProtocolProviderAgency'],
-						['Sanford Health EMS Protocols', 'com.acidremap.PPPSanfordHealthEMSProtocols']
-						], 0)) %><br />
-					<!--
-					<%= label_tag(:platform, t(:platform_label)) %>
-					<%= select_tag(:platform, options_for_select(["iOS", "Android"], "iOS")) %><br />
-					-->
-					<%= label_tag(:first_name, t(:first_name_label)) %>
-					<%= text_field_tag :first_name, '', class: "form-control", placeholder: t(:first_name_placeholder) %><br />
-					<%= label_tag(:last_name, t(:last_name_label)) %>
-					<%= text_field_tag :last_name, '', class: "form-control", placeholder: t(:last_name_placeholder) %><br />
-					<%= label_tag(:email, t(:email_label), class: "required") %>
-					<%= email_field_tag :email, '', class: "form-control", placeholder: t(:email_placeholder) %><br />
+					<div class="form-group">
+						<%= label_tag(:app_name, t(:app_name_label)) %>
+						<%= select_tag(:app_id, options_for_select([
+							['Paramedic Protocol Provider', 'com.acidremap.ParamedicProtocolProvider'],
+							['PPP Agency', 'com.acidremap.ParamedicProtocolProviderAgency'],
+							['Sanford Health EMS Protocols', 'com.acidremap.PPPSanfordHealthEMSProtocols']
+							], 0)) %><br />
+						<!--
+						<%= label_tag(:platform, t(:platform_label)) %>
+						<%= select_tag(:platform, options_for_select(["iOS", "Android"], "iOS")) %><br />
+						-->
+						<%= label_tag(:first_name, t(:first_name_label)) %>
+						<%= text_field_tag :first_name, '', class: "form-control", placeholder: t(:first_name_placeholder) %><br />
+						<%= label_tag(:last_name, t(:last_name_label)) %>
+						<%= text_field_tag :last_name, '', class: "form-control", placeholder: t(:last_name_placeholder) %><br />
+						<%= label_tag(:email, t(:email_label), class: "required") %>
+						<%= email_field_tag :email, '', class: "form-control", placeholder: t(:email_placeholder) %><br />
 	
-					<% if ENV["ITC_TOKEN"] %>
-						<% if params[:token] %>
-						<%= hidden_field_tag :token, '', value: params[:token] %>
-					<% else %>
-						<%= label_tag(:token, t(:password_label)) %>
-						<%= text_field_tag :token, '', class: "form-control", placeholder: t(:password_placeholder) %><br />
+						<% if ENV["ITC_TOKEN"] %>
+							<% if params[:token] %>
+							<%= hidden_field_tag :token, '', value: params[:token] %>
+						<% else %>
+							<%= label_tag(:token, t(:password_label)) %>
+							<%= text_field_tag :token, '', class: "form-control", placeholder: t(:password_placeholder) %><br />
+						<% end %>
 					<% end %>
+					<br />
+					<%= submit_tag t(:get_beta_access), class: 'btn btn-lg btn-primary btn-block', id: "submit" %>
+					</div>
 				<% end %>
-				<br />
-				<%= submit_tag t(:get_beta_access), class: 'btn btn-lg btn-primary btn-block', id: "submit" %>
-			<% end %>
 			<% else %>
 				<p class="alert alert-<%= @type %>">
 					<%= @message %>
