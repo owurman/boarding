@@ -24,7 +24,7 @@
 
 
 			<% unless @message %>
-				<h4><%= @metadata[:title] %></h4>
+				<h4 class="text-center"><%= @metadata[:title] %></h4>
 
 				<%= form_tag("/beta/ios/submit", method: "post") do %>
 					<div class="form-group">
