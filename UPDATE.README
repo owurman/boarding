@@ -1,0 +1,13 @@
+To update:
+create backup snapshot
+
+git pull git://github.com/fastlane/boarding
+resolve conflicts
+git add/commit/push
+bundle install # to get new required gems
+
+Might need to:
+sudo gem update fastlane # although it's probably handled by bundle install
+
+Don't forget to restart apache:
+apachectl restart
