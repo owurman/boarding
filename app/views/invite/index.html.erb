@@ -30,10 +30,12 @@
 					<div class="form-group">
 						<%= label_tag(:app_name, t(:app_name_label)) %>
 						<%= select_tag(:app_id, options_for_select([
-							['Paramedic Protocol Provider', 'com.acidremap.ParamedicProtocolProvider'],
-							['PPP Agency', 'com.acidremap.ParamedicProtocolProviderAgency'],
-							['Sanford Health EMS Protocols', 'com.acidremap.PPPSanfordHealthEMSProtocols']
-							], 0), {:class => 'form-control'}) %><br />
+						    ['Paramedic Protocol Provider', 'com.acidremap.ParamedicProtocolProvider'],
+						    ['PPP Agency', 'com.acidremap.ParamedicProtocolProviderAgency'],
+						    ['LCFR Field Operations Guide', 'com.acidremap.PPPLCFRFieldOperationsGuide'],
+						    ['San Francisco EMS Protocols', 'com.acidremap.PPPSanFranciscoEMSProtocols']
+						    ], 0), {:class => 'form-control'}) %><br />
+						<!--['Sanford Health EMS Protocols', 'com.acidremap.PPPSanfordHealthEMSProtocols']-->
 						<!--
 						<%= label_tag(:platform, t(:platform_label)) %>
 						<%= select_tag(:platform, options_for_select(["iOS", "Android"], "iOS")) %><br />

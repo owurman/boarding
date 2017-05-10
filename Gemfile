@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.2.3'
+ruby '2.3.3'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.1'
@@ -16,7 +16,9 @@ gem 'coffee-rails', '~> 4.1.0'
 gem 'jquery-rails'
 
 # Added by Felix
-gem 'spaceship', '>= 0.32.1'
+#gem 'spaceship', '>= 0.32.1'
+#gem 'spaceship', '>= 0.38.5'
+gem 'spaceship', '>= 1.0.0'
 
 gem 'bootstrap-sass', '~> 3.3.5'
 
