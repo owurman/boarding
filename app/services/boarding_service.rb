@@ -62,11 +62,13 @@ class BoardingService
       Rails.logger.info "Tester #{email} already exists on application"
       add_tester_response.message = t(:message_email_exists)
       add_tester_response.type = "danger"
-    elsif tester = Spaceship::Tunes::Tester::External.find(email)
-      Rails.logger.info "Tester #{email} exists in iTunesConnect but not on application"
-      add_tester_response.message = t(:message_email_exists)
-      add_tester_response.type = "danger"
     else
+      if tester = Spaceship::Tunes::Tester::External.find(email)
+        Rails.logger.info "Tester #{email} exists in iTunesConnect but not on application"
+        # Stupid. Don't give the user an error message for this!
+        #add_tester_response.message = t(:message_email_exists)
+        #add_tester_response.type = "danger"
+      end
       tester = Spaceship::Tunes::Tester::External.create!(email: email, first_name: first_name, last_name: last_name)
       Rails.logger.info "Successfully created tester #{email}"
       if testing_is_live?
