@@ -3,7 +3,7 @@ create backup snapshot
 
 git pull git://github.com/fastlane/boarding
 resolve conflicts
-git add/commit/push
+git add/commit/push # might need env GIT_SSL_NO_VERIFY=true especially on staging server
 bundle install # to get new required gems
 
 Might need to:
