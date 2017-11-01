@@ -26,47 +26,59 @@
 			<% unless @message %>
 				<h4 class="text-center"><%= @metadata[:title] %></h4>
 
-				<%= form_tag("/beta/ios/submit", method: "post") do %>
-					<div class="form-group">
-						<%= label_tag(:app_name, t(:app_name_label)) %>
-						<%= select_tag(:app_id, options_for_select([
-						    ['Paramedic Protocol Provider', 'com.acidremap.ParamedicProtocolProvider'],
-						    ['PPP Agency', 'com.acidremap.ParamedicProtocolProviderAgency'],
-						    ['LCFR Field Operations Guide', 'com.acidremap.PPPLCFRFieldOperationsGuide'],
-						    ['San Francisco EMS Protocols', 'com.acidremap.PPPSanFranciscoEMSProtocols']
-						    ], 0), {:class => 'form-control'}) %><br />
-						<!--['Sanford Health EMS Protocols', 'com.acidremap.PPPSanfordHealthEMSProtocols']-->
-						<!--
-						<%= label_tag(:platform, t(:platform_label)) %>
-						<%= select_tag(:platform, options_for_select(["iOS", "Android"], "iOS")) %><br />
-						-->
-						<%= label_tag(:first_name, t(:first_name_label)) %>
-						<%= text_field_tag :first_name, '', class: "form-control", placeholder: t(:first_name_placeholder) %><br />
-						<%= label_tag(:last_name, t(:last_name_label)) %>
-						<%= text_field_tag :last_name, '', class: "form-control", placeholder: t(:last_name_placeholder) %><br />
-						<%= label_tag(:email, t(:email_label), class: "required") %>
-						<%= email_field_tag :email, '', class: "form-control", placeholder: t(:email_placeholder) %><br />
-	
-						<% if ENV["ITC_TOKEN"] %>
-							<% if params[:token] %>
-							<%= hidden_field_tag :token, '', value: params[:token] %>
-						<% else %>
-							<%= label_tag(:token, t(:password_label)) %>
-							<%= text_field_tag :token, '', class: "form-control", placeholder: t(:password_placeholder) %><br />
-						<% end %>
-					<% end %>
-					<br />
-					<%= submit_tag t(:get_beta_access), class: 'btn btn-lg btn-primary btn-block', id: "submit" %>
-					
-				<% end %>
-			<% else %>
-				<p class="alert alert-<%= @type %>">
-					<%= @message %>
-				</p>
-			<% end %>
-		</div>
-	</div>
+    <%= form_tag("/beta/ios/submit", method: "post", style: "text-align: left", onsubmit: "didSubmit()") do %>
+    <%= label_tag(:app_name, t(:app_name_label)) %>
+      <%= select_tag(:app_id, options_for_select([
+        ['Paramedic Protocol Provider', 'com.acidremap.ParamedicProtocolProvider'],
+        ['PPP Agency', 'com.acidremap.ParamedicProtocolProviderAgency'],
+        ['LCFR Field Operations Guide', 'com.acidremap.PPPLCFRFieldOperationsGuide'],
+        ['San Francisco EMS Protocols', 'com.acidremap.PPPSanFranciscoEMSProtocols']
+      ], 0), {:class => 'form-control'}) %><br />
+      <!--['Sanford Health EMS Protocols', 'com.acidremap.PPPSanfordHealthEMSProtocols']-->
+      <!--
+        <%= label_tag(:platform, t(:platform_label)) %>
+        <%= select_tag(:platform, options_for_select(["iOS", "Android"], "iOS")) %><br />
+      -->
+      <%= label_tag(:first_name, t(:first_name_label)) %>
+      <%= text_field_tag :first_name, '', class: "form-control", placeholder: t(:first_name_placeholder) %><br />
+      <%= label_tag(:last_name, t(:last_name_label)) %>
+      <%= text_field_tag :last_name, '', class: "form-control", placeholder: t(:last_name_placeholder) %><br />
+      <%= label_tag(:email, t(:email_label), class: "required") %>
+      <%= email_field_tag :email, '', class: "form-control", placeholder: t(:email_placeholder) %><br />
+
+      <% if ENV["ITC_TOKEN"] %>
+        <% if params[:token] %>
+          <%= hidden_field_tag :token, '', value: params[:token] %>
+        <% else %>
+          <%= label_tag(:token, t(:password_label)) %>
+          <%= password_field_tag :token, '', class: "form-control", placeholder: t(:password_placeholder) %><br />
+        <% end %>
+      <% end %>
+
+      <br />
+      <%= submit_tag t(:get_beta_access), class: 'btn btn-lg btn-primary btn-block', id: "submit" %>
+    <% end %>
+  <% else %>
+    <p class="alert alert-<%= @type %>">
+      <%= @message %>
+    </p>
+  <% end %>
+
+  <p class="footer">
+    <% if @imprint_url %>
+      <%= link_to t(:imprint), @imprint_url, target: "_blank" %> |
+    <% end %>
+    Powered by <a href="https://fastlane.tools" target="_blank">fastlane</a>
+  </p>
 </div>
+
+<script type="text/javascript">
+  function didSubmit() {
+    $("#submit").val("<%= t(:loading) %>...")
+    $("#submit").prop('disabled', true)
+  }
+</script>
+
 <style type="text/css">
   .appIcon {
     -webkit-border-radius: 22.544%;
@@ -78,5 +90,15 @@
   }
   #submit {
     margin-bottom: 20px;
+  }
+  .footer {
+    color: #888;
+  }
+  @media screen and (min-width: 800px) {
+    .footer {
+      position: absolute;
+      bottom: 10px;
+      right: 25px;
+    }
   }
 </style>

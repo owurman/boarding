@@ -12,65 +12,46 @@ class BoardingService
   attr_accessor :app_id
   attr_accessor :user
   attr_accessor :password
-  attr_accessor :tester_groups
+  attr_accessor :tester_group_names
   attr_accessor :is_demo
   attr_accessor :itc_token
   attr_accessor :itc_closed_text
+  attr_accessor :imprint_url
 
   def initialize(app_id: ENV["ITC_APP_ID"],
                    user: ENV["ITC_USER"] || ENV["FASTLANE_USER"],
                password: ENV["ITC_PASSWORD"] || ENV["FASTLANE_PASSWORD"],
-          tester_groups: ENV["ITC_APP_TESTER_GROUPS"])
+     tester_group_names: ENV["ITC_APP_TESTER_GROUPS"])
     @app_id = app_id
     @user = user
     @password = password
 
-    groups = tester_groups.to_s.split(/\s*,\s*/)
-    @tester_groups = groups unless groups.empty?
+    groups = tester_group_names.to_s.split(/\s*,\s*/)
+    @tester_group_names = groups unless groups.empty?
 
     @is_demo = ENV["ITC_IS_DEMO"]
     @itc_token = ENV["ITC_TOKEN"]
     @itc_closed_text = ENV["ITC_CLOSED_TEXT"]
+    @imprint_url = ENV["IMPRINT_URL"]
 
     ensure_values
   end
 
   def add_tester(email, first_name, last_name, app_flavor)
-#      login
-
-#      tester = Spaceship::Tunes::Tester::External.find_by_app(app_id, email)
-
-#      logger.info "Found tester #{tester}"
-
-#      if tester
-#        @message = t(:message_email_exists)
-#        @type = "danger"
-#      else
-#        tester = Spaceship::Tunes::Tester::External.new({
-#          'emailAddress' => {'value' => email},
-#          'firstName' => {'value' => first_name},
-#          'lastName' => {'value' => last_name}
-#        })
-
-#        logger.info "Successfully created tester #{tester.email}"
-
-      
-    tester = Spaceship::Tunes::Tester::External.find_by_app(app_flavor.apple_id, email)
     add_tester_response = AddTesterResponse.new
+    add_tester_response.type = "danger"
 
+    tester = find_app_tester(email: email, app: app_flavor)
     if tester
-      Rails.logger.info "Tester #{email} already exists on application"
       add_tester_response.message = t(:message_email_exists)
       add_tester_response.type = "danger"
     else
-      if tester = Spaceship::Tunes::Tester::External.find(email)
-        Rails.logger.info "Tester #{email} exists in iTunesConnect but not on application"
-        # Stupid. Don't give the user an error message for this!
-        #add_tester_response.message = t(:message_email_exists)
-        #add_tester_response.type = "danger"
-      end
-      tester = Spaceship::Tunes::Tester::External.create!(email: email, first_name: first_name, last_name: last_name)
-      Rails.logger.info "Successfully created tester #{email}"
+      tester = create_tester(
+        email: email,
+        first_name: first_name,
+        last_name: last_name,
+        app: app_flavor.apple_id
+      )
       if testing_is_live?
         add_tester_response.message = t(:message_success_live)
       else
@@ -79,28 +60,78 @@ class BoardingService
       add_tester_response.type = "success"
     end
 
-#        #if apple_id.length > 0
-#        logger.info "Adding tester to application ID #{app_id}"
-#        tester.add_to_app!(app_id)
-#        logger.info "Done"
-#        #end
+    begin
+      groups = Spaceship::TestFlight::Group.add_tester_to_groups!(tester: tester, app: app_flavor, groups: tester_group_names)
+      if tester.kind_of?(Spaceship::Tunes::Tester::Internal)
+        Rails.logger.info "Successfully added tester to app #{app_flavor.name}"
+      else
+        # tester was added to the group(s) in the above add_tester_to_groups() call, now we need to let the user know which group(s)
+        if tester_group_names
+          group_names = groups.map(&:name).join(", ")
+          Rails.logger.info "Successfully added tester to group(s): #{group_names} in app: #{app_flavor.name}"
+        else
+          Rails.logger.info "Successfully added tester to the default tester group in app: #{app_flavor.name}"
+        end
+      end
 
-#        if testing_is_live?
-#          @message = t(:message_success_live)
-#        else
-#          @message = t(:message_success_pending)
-#        end
-#        @type = "success"
-    if app_flavor.apple_id.length > 0
-      groups = tester_groups || ["External Testers"]
-      Rails.logger.info "Addding tester to application #{app_flavor.name} in group(s): #{groups.to_s}"
-      add_tester_to_groups!(tester: tester, app: app_flavor, groups: tester_groups)
-      Rails.logger.info "Done"
+    rescue => ex
+      Rails.logger.error "Could not add #{tester.email} to app: #{app_flavor.name}"
+      raise ex
     end
+
     return add_tester_response
   end
 
   private
+
+    def create_tester(email: nil, first_name: nil, last_name: nil, app: nil)
+      current_user = Spaceship::Members.find(Spaceship::Tunes.client.user)
+
+      if app && current_user.app_manager?
+        Spaceship::TestFlight::Tester.create_app_level_tester(app_id: app.apple_id,
+                                                          first_name: first_name,
+                                                           last_name: last_name,
+                                                               email: email)
+        tester = Spaceship::Tunes::Tester::External.find_by_app(app.apple_id, email)
+        Rails.logger.info "Successfully added tester: #{email} to app: #{app_flavor.name}"
+      elsif current_user.admin?
+        tester = Spaceship::Tunes::Tester::External.create!(email: email,
+                                                       first_name: first_name,
+                                                        last_name: last_name)
+        Rails.logger.info "Successfully added tester: #{email} to your account"
+      else
+        raise "Current account doesn't have permission to create a tester"
+      end
+
+      return tester
+    rescue => ex
+      Rails.logger.error "Could not create tester #{email}"
+      raise ex
+    end
+
+    def find_app_tester(email: nil, app: nil)
+      current_user = Spaceship::Members.find(Spaceship::Tunes.client.user)
+      unless current_user.admin?
+        raise "Account #{current_user.email_address} doesn't have a role that is allowed to administer app testers, current roles: #{current_user.roles}"
+        return nil
+      end
+        
+      if app
+        tester = Spaceship::Tunes::Tester::Internal.find_by_app(app.apple_id, email)
+        tester ||= Spaceship::Tunes::Tester::External.find_by_app(app.apple_id, email)
+      elsif current_user.admin?
+        tester = Spaceship::Tunes::Tester::Internal.find(email)
+        tester ||= Spaceship::Tunes::Tester::External.find(email)
+      else
+        raise "Account #{current_user.email_address} is only an 'App Manager' and therefore you must also define what app this tester (#{email}) should be added to"
+      end
+        
+      if tester
+        Rails.logger.info "Found existing tester #{email}"
+      end
+
+      return tester
+    end
     def ensure_values
       error_message = []
 
@@ -115,34 +146,16 @@ class BoardingService
       @app ||= Spaceship::Tunes::Application.find(@app_id)      
       raise "Could not find app with ID #{app_id}" if @app.nil?
 
-      if tester_groups
+      if tester_group_names
         test_flight_groups = Spaceship::TestFlight::Group.filter_groups(app_id: @app.apple_id)
         test_flight_group_names = test_flight_groups.map { |group| group.name }.to_set
-        tester_groups.select do |group_name|
+        tester_group_names.select do |group_name|
           next if test_flight_group_names.include?(group_name)
           error_message << "TestFlight missing group `#{group_name}`, You need to first create this group in iTunes Connect."
         end
       end
 
       raise error_message.join("\n") if error_message.length > 0
-    end
-
-    def add_tester_to_groups!(tester: nil, app: nil, groups: nil)
-      if groups.nil?
-          default_external_group = app.default_external_group
-          if default_external_group.nil?
-            Rails.logger.error "The app #{app.name} does not have a default external group. Please make sure to pass group names to the `:groups` option."
-          end
-          test_flight_groups = [default_external_group]
-      else
-        test_flight_groups = Spaceship::TestFlight::Group.filter_groups(app_id: app.apple_id) do |group| 
-          groups.include?(group.name) 
-        end
-
-        Rails.logger.error "There are no groups available matching the names passed to the `:groups` option." if test_flight_groups.empty?
-      end
-      
-      test_flight_groups.each { |group| group.add_tester!(tester) }
     end
 
     def testing_is_live?

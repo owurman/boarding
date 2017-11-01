@@ -2,6 +2,7 @@ require 'spaceship'
 class InviteController < ApplicationController
   before_action :set_app_details
   before_action :check_disabled_text
+  before_action :check_imprint_url
 
   skip_before_filter :verify_authenticity_token
 
@@ -28,6 +29,10 @@ class InviteController < ApplicationController
       render :index
       return
     end
+    
+    email = params[:email]
+    first_name = params[:first_name]
+    last_name = params[:last_name]
 
     if ENV["RESTRICTED_DOMAIN"]
       domains = ENV["RESTRICTED_DOMAIN"].split(",")
@@ -52,20 +57,9 @@ class InviteController < ApplicationController
       end
     end
     
-    email = params[:email]
-    first_name = params[:first_name]
-    last_name = params[:last_name]
     app_id = params[:app_id]
     app = Spaceship::Application.find(app_id)
     app_id = app.apple_id
-
-    # This isn't even on the form right now.
-    platform = params[:platform]
-
-    if platform == "Android"
-      redirect_to("https://play.google.com/apps/testing/#{app_id}")
-      return
-    end
 
     if email.length == 0
       render :index
@@ -127,6 +121,12 @@ class InviteController < ApplicationController
       if boarding_service.itc_closed_text
         @message = boarding_service.itc_closed_text
         @type = "warning"
+      end
+    end
+
+    def check_imprint_url
+      if boarding_service.imprint_url
+        @imprint_url = boarding_service.imprint_url
       end
     end
 end
