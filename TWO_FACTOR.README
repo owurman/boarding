@@ -1,0 +1,4 @@
+This will need to be run monthly, or whenever we want to open up beta sign ups.
+
+*run (from home directory works): fastlane spaceauth -u oded@acidremap.com
+*Add token to config/secrets.conf
